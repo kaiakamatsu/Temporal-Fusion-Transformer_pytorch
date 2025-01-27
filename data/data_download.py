@@ -59,10 +59,11 @@ def download_electricity(config):
     df = pd.read_csv(csv_path, index_col=0, sep=';', decimal=',')
     df.index = pd.to_datetime(df.index)
     df.sort_index(inplace=True)
+    print(df.describe())
 
     # Used to determine the start and end dates of a series
     output = df.resample('1h').mean().replace(0., np.nan)
-
+    
     earliest_time = output.index.min()
 
     df_list = []

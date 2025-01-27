@@ -60,9 +60,11 @@ class ElectricityFormatter(GenericDataFormatter):
         valid = df.loc[(index >= valid_boundary - 7) & (index < test_boundary)]
         test = df.loc[index >= test_boundary - 7]
 
-        self.set_scalers(train)
+        self.set_scalers(train) # calibrate standard scalers based on training data 
+            # z-score normalization for real-valued variables (separately for each entity)
+            # label encoding for categorical variables 
 
-        return (self.transform_inputs(data) for data in [train, valid, test])
+        return (self.transform_inputs(data) for data in [train, valid, test]) # use the scalers to scale and transform each data fold
 
     def set_scalers(self, df):
         """Calibrates scalers using the data supplied.
@@ -93,10 +95,10 @@ class ElectricityFormatter(GenericDataFormatter):
                 data = sliced[real_inputs].values
                 targets = sliced[[target_column]].values
                 self._real_scalers[identifier] \
-                = sklearn.preprocessing.StandardScaler().fit(data)
+                = sklearn.preprocessing.StandardScaler().fit(data) # z-score normalization of real-valued inputs
 
                 self._target_scaler[identifier] \
-                = sklearn.preprocessing.StandardScaler().fit(targets)
+                = sklearn.preprocessing.StandardScaler().fit(targets) # z-score normalization of real-valued target (this may need to be changed for binary targets)
                 identifiers.append(identifier)
 
         # Format categorical scalers
@@ -110,7 +112,7 @@ class ElectricityFormatter(GenericDataFormatter):
             # Set all to str so that we don't have mixed integer/string columns
             srs = df[col].apply(str)
             categorical_scalers[col] = sklearn.preprocessing.LabelEncoder().fit(
-              srs.values)
+              srs.values) # label encoder to turn categorical inputs into integers
             num_classes.append(srs.nunique())
 
         # Set categorical scaler outputs
